@@ -1,4 +1,4 @@
-package crumble;
+package crumble.scanner;
 
 public enum TokenType {
     // Single-character tokens.

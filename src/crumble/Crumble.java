@@ -1,5 +1,11 @@
 package crumble;
 
+import crumble.parser.Parser;
+import crumble.scanner.Scanner;
+import crumble.scanner.Token;
+import crumble.scanner.TokenType;
+import tool.ASTPrettyPrinter;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -42,10 +48,20 @@ public class Crumble {
      * @param line    the line number where the error occurred
      * @param message the error message
      */
+
     public static void error(int line, String message) {
         System.err.println("Error at line " + line + ": " + message);
         hadError = true;
     }
+
+    public static void error(Token token, String message) {
+        if (token.getType() == TokenType.EOF) {
+            report(token.getLine(), " at end", message);
+        } else {
+            report(token.getLine(), " at '" + token.getLexeme() + "'", message);
+        }
+    }
+
 
     /**
      * Starts an interactive prompt where users can enter Crumble code line by line.
@@ -99,5 +115,21 @@ public class Crumble {
                 System.out.println(token);
             }
         }
+
+        Parser parser = new Parser(tokens);
+        Expr expression = parser.parse();
+
+        // Stop if there was a syntax error.
+        if (hadError) return;
+
+        System.out.println(new ASTPrettyPrinter().print(expression));
+
+    }
+
+    private static void report(int line, String where,
+                               String message) {
+        System.err.println(
+                "[line " + line + "] Error" + where + ": " + message);
+        hadError = true;
     }
 }
